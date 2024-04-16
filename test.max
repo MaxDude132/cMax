@@ -7,14 +7,14 @@ test: n {
 }
 
 
-var val = 0;
+var val = 1;
 
 while val < 1000000 {
     var res = test(val);
     if res == 2 {
     	print res;
     }
-    val = val + 1;
+    val *= 2;
 }
 
 class Brioche {}

@@ -405,7 +405,32 @@ static void namedVariable(Token name, bool canAssign) {
 	if (canAssign && match(TOKEN_EQUAL)) {
 		expression();
 		emitBytes(setOp, (uint8_t)arg);
-	} else {
+	}
+	else if (canAssign && match(TOKEN_PLUS_EQUAL)) {
+		expression();
+		emitBytes(getOp, (uint8_t)arg);
+		emitByte(OP_ADD);
+		emitBytes(setOp, (uint8_t)arg);
+	}
+	else if (canAssign && match(TOKEN_MINUS_EQUAL)) {
+		expression();
+		emitBytes(getOp, (uint8_t)arg);
+		emitByte(OP_SUBTRACT);
+		emitBytes(setOp, (uint8_t)arg);
+	}
+	else if (canAssign && match(TOKEN_SLASH_EQUAL)) {
+		expression();
+		emitBytes(getOp, (uint8_t)arg);
+		emitByte(OP_DIVIDE);
+		emitBytes(setOp, (uint8_t)arg);
+	}
+	else if (canAssign && match(TOKEN_STAR_EQUAL)) {
+		expression();
+		emitBytes(getOp, (uint8_t)arg);
+		emitByte(OP_MULTIPLY);
+		emitBytes(setOp, (uint8_t)arg);
+	}
+	else {
 		emitBytes(getOp, (uint8_t)arg);
 	}
 }
@@ -431,8 +456,8 @@ static void unary(bool canAssign) {
 
 	// Emit the operator instruction.
 	switch (operatorType) {
-	case TOKEN_BANG: emitByte(OP_NOT); break;
-	case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+		case TOKEN_BANG: emitByte(OP_NOT); break;
+		case TOKEN_MINUS: emitByte(OP_NEGATE); break;
 	default: return; // Unreachable.
 	}
 }
@@ -534,9 +559,13 @@ ParseRule rules[] = {
   [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
   [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
   [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
-  [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+  [TOKEN_MINUS_EQUAL]   = {NULL,     NULL, PREC_NONE},
+  [TOKEN_PLUS_EQUAL]    = {NULL,     NULL, PREC_NONE},
+  [TOKEN_SLASH_EQUAL]   = {NULL,     NULL, PREC_NONE},
+  [TOKEN_STAR_EQUAL]    = {NULL,     NULL, PREC_NONE},
+  [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
