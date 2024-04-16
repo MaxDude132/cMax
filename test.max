@@ -9,8 +9,11 @@ fun test: n {
 
 var val = 0;
 
-while (val < 1000000) {
-    test(val);
+while val < 1000000 {
+    var res = test(val);
+    if (res == 2) {
+    	print res;
+    }
     val = val + 1;
 }
 
