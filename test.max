@@ -1,7 +1,9 @@
 var start_time = clock();
 
-fun test (n) {
-    return n * 2;
+fun test: n {
+	var res = n;
+	res = n * 2;
+    return res;
 }
 
 
@@ -16,12 +18,12 @@ class Brioche {}
 print Brioche;
 
 class Brunch {
-  bacon() {}
-  eggs() {}
+  bacon {}
+  eggs {}
 }
 
 class Scone {
-  topping(first, second) {
+  topping: first, second {
     print "scone with " + first + " and " + second;
   }
 }
@@ -33,17 +35,17 @@ scone.topping("berries", "cream");
 
 
 class myClass {
-	myFunc() {
+	myFunc {
 		print "lait";
 	}
 }
 
 class CoffeeMaker {
-  init(coffee) {
+  init: coffee {
     this.coffee = coffee;
   }
 
-  brew() {
+  brew {
     print "Enjoy your cup of " + this.coffee;
 
     // No reusing the grounds!
@@ -55,13 +57,13 @@ var maker = CoffeeMaker("coffee and chicory");
 maker.brew();
 
 class Doughnut {
-  cook() {
+  cook {
     print "Dunk in the fryer.";
   }
 }
 
 class Cruller < Doughnut {
-  finish() {
+  finish {
     print "Glaze with icing.";
   }
 }

@@ -655,8 +655,7 @@ static void function(FunctionType type) {
 	initCompiler(&compiler, type);
 	beginScope();
 
-	consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
-	if (!check(TOKEN_RIGHT_PAREN)) {
+	if (match(TOKEN_COLON)) {
 		do {
 			current->function->arity++;
 			if (current->function->arity > 255) {
@@ -666,7 +665,6 @@ static void function(FunctionType type) {
 			defineVariable(constant);
 		} while (match(TOKEN_COMMA));
 	}
-	consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 	consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
 	block();
 
