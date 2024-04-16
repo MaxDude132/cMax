@@ -1,6 +1,6 @@
 var start_time = clock();
 
-fun test: n {
+test: n {
 	var res = n;
 	res = n * 2;
     return res;

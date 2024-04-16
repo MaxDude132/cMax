@@ -110,15 +110,19 @@ static void errorAtCurrent(const char* message) {
 	errorAt(&parser.current, message);
 }
 
+static void errorAtNext(const char* message) {
+	errorAt(&parser.next, message);
+}
+
 static void advance() {
 	parser.previous = parser.current;
 	parser.current = parser.next;
 
 	for (;;) {
 		parser.next = scanToken();
-		if (parser.current.type != TOKEN_ERROR) break;
+		if (parser.next.type != TOKEN_ERROR) break;
 
-		errorAtCurrent(parser.current.start);
+		errorAtNext(parser.next.start);
 	}
 }
 
@@ -133,6 +137,10 @@ static void consume(TokenType type, const char* message) {
 
 static bool check(TokenType type) {
 	return parser.current.type == type;
+}
+
+static bool check_next(TokenType type) {
+	return parser.next.type == type;
 }
 
 static bool match(TokenType type) {
@@ -545,7 +553,6 @@ ParseRule rules[] = {
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FALSE]			= {literal,  NULL,   PREC_NONE},
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
@@ -806,7 +813,6 @@ static void synchronize() {
 		if (parser.previous.type == TOKEN_SEMICOLON) return;
 		switch (parser.current.type) {
 		case TOKEN_CLASS:
-		case TOKEN_FUN:
 		case TOKEN_VAR:
 		case TOKEN_FOR:
 		case TOKEN_IF:
@@ -826,7 +832,8 @@ static void synchronize() {
 static void declaration() {
 	if (match(TOKEN_CLASS)) {
 		classDeclaration();
-	} else if (match(TOKEN_FUN)) {
+	}
+	else if (check(TOKEN_IDENTIFIER) && (check_next(TOKEN_COLON) || check_next(TOKEN_LEFT_BRACE))) {
 		funDeclaration();
 	} else if (match(TOKEN_VAR)) {
 		varDeclaration();
