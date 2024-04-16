@@ -1,73 +1,15 @@
-var start_time = clock();
-
-fun test (n) {
-    return n * 2;
-}
-
-
-var val = 0;
-
-while (val < 1000000) {
-    test(val);
-    val = val + 1;
-}
-
-class Brioche {}
-print Brioche;
-
-class Brunch {
-  bacon() {}
-  eggs() {}
-}
-
-class Scone {
-  topping(first, second) {
-    print "scone with " + first + " and " + second;
-  }
-}
-
-var scone = Scone();
-scone.topping("berries", "cream");
-
-
-
-
-class myClass {
-	myFunc() {
-		print "lait";
+class Test {
+	init: var {
+		me.var = var;
 	}
 }
 
-class CoffeeMaker {
-  init(coffee) {
-    this.coffee = coffee;
-  }
+-- this is a comment and should be ignored
+test = Test("Some great string");
+print test.var;
 
-  brew() {
-    print "Enjoy your cup of " + this.coffee;
-
-    // No reusing the grounds!
-    this.coffee = nil;
-  }
-}
-
-var maker = CoffeeMaker("coffee and chicory");
-maker.brew();
-
-class Doughnut {
-  cook() {
-    print "Dunk in the fryer.";
-  }
-}
-
-class Cruller < Doughnut {
-  finish() {
-    print "Glaze with icing.";
-  }
-}
-
-var cruller = Cruller();
-cruller.finish();
-cruller.cook();
-
-print clock() - start_time;
+-*
+print test.var;
+print test.var;
+print test.var;
+*-

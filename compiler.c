@@ -12,8 +12,9 @@
 #endif
 
 typedef struct {
-	Token current;
 	Token previous;
+	Token current;
+	Token next;
 	bool hadError;
 	bool panicMode;
 } Parser;
@@ -111,9 +112,11 @@ static void errorAtCurrent(const char* message) {
 
 static void advance() {
 	parser.previous = parser.current;
+	parser.current = parser.next;
 
 	for (;;) {
-		parser.current = scanToken();
+		parser.current = parser.next;
+		parser.next = scanToken();
 		if (parser.current.type != TOKEN_ERROR) break;
 
 		errorAtCurrent(parser.current.start);
@@ -131,6 +134,10 @@ static void consume(TokenType type, const char* message) {
 
 static bool check(TokenType type) {
 	return parser.current.type == type;
+}
+
+static bool check_next(TokenType type) {
+	return parser.next.type == type;
 }
 
 static bool match(TokenType type) {
@@ -221,8 +228,8 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 	local->depth = 0;
 	local->isCaptured = false;
 	if (type != TYPE_FUNCTION) {
-		local->name.start = "this";
-		local->name.length = 4;
+		local->name.start = "me";
+		local->name.length = 2;
 	}
 	else {
 		local->name.start = "";
@@ -404,9 +411,9 @@ static void variable(bool canAssign) {
 	namedVariable(parser.previous, canAssign);
 }
 
-static void this_(bool canAssign) {
+static void me(bool canAssign) {
 	if (currentClass == NULL) {
-		error("Can't use 'this' outside of a class.");
+		error("Can't use 'me' outside of a class.");
 		return;
 	}
 
@@ -502,7 +509,7 @@ static void super_(bool canAssign) {
 	consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
 	uint8_t name = identifierConstant(&parser.previous);
 
-	namedVariable(syntheticToken("this"), false);  
+	namedVariable(syntheticToken("me"), false);  
 	if (match(TOKEN_LEFT_PAREN)) {
 		uint8_t argCount = argumentList();
 		namedVariable(syntheticToken("super"), false);
@@ -543,16 +550,14 @@ ParseRule rules[] = {
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FALSE]			= {literal,  NULL,   PREC_NONE},
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SUPER]         = {super_,   NULL,   PREC_NONE},
-  [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
+  [TOKEN_ME]            = {me,    NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
-  [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
@@ -575,7 +580,7 @@ static void parsePrecedence(Precedence precedence) {
 		infixRule(canAssign);
 	}
 
-	if (canAssign && match(TOKEN_EQUAL)) {
+	if (!canAssign && match(TOKEN_EQUAL)) {
 		error("Invalid assignment target.");
 	}
 }
@@ -600,10 +605,6 @@ static void declareVariable() {
 		Local* local = &current->locals[i];
 		if (local->depth != -1 && local->depth < current->scopeDepth) {
 			break;
-		}
-
-		if (identifiersEqual(name, &local->name)) {
-			error("Already a variable with this name in this scope.");
 		}
 	}
 
@@ -655,8 +656,7 @@ static void function(FunctionType type) {
 	initCompiler(&compiler, type);
 	beginScope();
 
-	consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
-	if (!check(TOKEN_RIGHT_PAREN)) {
+	if (match(TOKEN_COLON)) {
 		do {
 			current->function->arity++;
 			if (current->function->arity > 255) {
@@ -666,7 +666,6 @@ static void function(FunctionType type) {
 			defineVariable(constant);
 		} while (match(TOKEN_COMMA));
 	}
-	consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 	consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
 	block();
 
@@ -808,8 +807,6 @@ static void synchronize() {
 		if (parser.previous.type == TOKEN_SEMICOLON) return;
 		switch (parser.current.type) {
 		case TOKEN_CLASS:
-		case TOKEN_FUN:
-		case TOKEN_VAR:
 		case TOKEN_FOR:
 		case TOKEN_IF:
 		case TOKEN_WHILE:
@@ -828,10 +825,10 @@ static void synchronize() {
 static void declaration() {
 	if (match(TOKEN_CLASS)) {
 		classDeclaration();
-	} else if (match(TOKEN_FUN)) {
-		funDeclaration();
-	} else if (match(TOKEN_VAR)) {
+	} else if (check(TOKEN_IDENTIFIER) && (check_next(TOKEN_EQUAL) || check_next(TOKEN_SEMICOLON))) {
 		varDeclaration();
+	} else if (check(TOKEN_IDENTIFIER) && (check_next(TOKEN_COLON)) || check_next(TOKEN_LEFT_BRACE)) {
+		funDeclaration();
 	} else {
 		statement();
 	}
@@ -890,6 +887,7 @@ ObjFunction* compile(const char* source) {
 	parser.panicMode = false;
 
 	advance();
+	advance();  // The parser stores the next value as well, so we need to call advance twice at the start to make sure current is populated.
 
 	while (!match(TOKEN_EOF)) {
 		declaration();
