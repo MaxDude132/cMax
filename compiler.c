@@ -433,16 +433,16 @@ static void binary(bool canAssign) {
 	parsePrecedence((Precedence)(rule->precedence + 1));
 
 	switch (operatorType) {
-	case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
-	case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-	case TOKEN_GREATER:       emitByte(OP_GREATER); break;
-	case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
-	case TOKEN_LESS:          emitByte(OP_LESS); break;
-	case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
-	case TOKEN_PLUS:          emitByte(OP_ADD); break;
-	case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
-	case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
-	case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+		case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
+		case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
+		case TOKEN_GREATER:       emitByte(OP_GREATER); break;
+		case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
+		case TOKEN_LESS:          emitByte(OP_LESS); break;
+		case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
+		case TOKEN_PLUS:          emitByte(OP_ADD); break;
+		case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
+		case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
+		case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
 	default: return; // Unreachable.
 	}
 }
@@ -705,7 +705,7 @@ static void classDeclaration() {
 	classCompiler.enclosing = currentClass;
 	currentClass = &classCompiler;
 
-	if (match(TOKEN_LESS)) {
+	if (match(TOKEN_COLON)) {
 		consume(TOKEN_IDENTIFIER, "Expect superclass name.");
 		variable(false);
 
