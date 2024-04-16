@@ -12,8 +12,9 @@
 #endif
 
 typedef struct {
-	Token current;
 	Token previous;
+	Token current;
+	Token next;
 	bool hadError;
 	bool panicMode;
 } Parser;
@@ -111,9 +112,10 @@ static void errorAtCurrent(const char* message) {
 
 static void advance() {
 	parser.previous = parser.current;
+	parser.current = parser.next;
 
 	for (;;) {
-		parser.current = scanToken();
+		parser.next = scanToken();
 		if (parser.current.type != TOKEN_ERROR) break;
 
 		errorAtCurrent(parser.current.start);
@@ -883,6 +885,7 @@ ObjFunction* compile(const char* source) {
 	parser.hadError = false;
 	parser.panicMode = false;
 
+	advance();
 	advance();
 
 	while (!match(TOKEN_EOF)) {
