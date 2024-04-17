@@ -1,37 +1,37 @@
-var start_time = clock();
+start_time = clock();
 
 test: n {
-	var res = n;
+	res = n;
 	res = n * 2;
     return res;
 }
 
 
-var val = 1;
+val = 0;
 
 while val < 1000000 {
-    var res = test(val);
+    res = test(val);
     if res == 2 {
     	print res;
     }
-    val *= 2;
+    val += 1;
 }
 
 class Brioche {}
 print Brioche;
 
 class Brunch {
-  bacon {}
-  eggs {}
+  	bacon {}
+  	eggs {}
 }
 
 class Scone {
-  topping: first, second {
-    print "scone with " + first + " and " + second;
-  }
+  	topping: first, second {
+  	  	print "scone with " + first + " and " + second;
+  	}
 }
 
-var scone = Scone();
+scone = Scone();
 scone.topping("berries", "cream");
 
 
@@ -44,34 +44,34 @@ class myClass {
 }
 
 class CoffeeMaker {
-  init: coffee {
-    this.coffee = coffee;
-  }
+  	init: coffee {
+  		this.coffee = coffee;
+  	}
 
-  brew {
-    print "Enjoy your cup of " + this.coffee;
+  	brew {
+    	print "Enjoy your cup of " + this.coffee;
 
-    // No reusing the grounds!
-    this.coffee = nil;
-  }
+    	// No reusing the grounds!
+    	this.coffee = nil;
+  	}
 }
 
-var maker = CoffeeMaker("coffee and chicory");
+maker = CoffeeMaker("coffee and chicory");
 maker.brew();
 
 class Doughnut {
-  cook {
-    print "Dunk in the fryer.";
-  }
+  	cook {
+    	print "Dunk in the fryer.";
+  	}
 }
 
 class Cruller: Doughnut {
-  finish {
-    print "Glaze with icing.";
-  }
+  	finish {
+    	print "Glaze with icing.";
+  	}
 }
 
-var cruller = Cruller();
+cruller = Cruller();
 cruller.finish();
 cruller.cook();
 

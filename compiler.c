@@ -339,9 +339,6 @@ static int resolveLocal(Compiler* compiler, Token* name) {
 	for (int i = compiler->localCount - 1; i >= 0; i--) {
 		Local* local = &compiler->locals[i];
 		if (identifiersEqual(name, &local->name)) {
-			if (local->depth == -1) {
-				error("Can't read local variable in its own initializer.");
-			}
 			return i;
 		}
 	}
@@ -590,7 +587,6 @@ ParseRule rules[] = {
   [TOKEN_SUPER]         = {super_,   NULL,   PREC_NONE},
   [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
-  [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
@@ -641,7 +637,7 @@ static void declareVariable() {
 		}
 
 		if (identifiersEqual(name, &local->name)) {
-			error("Already a variable with this name in this scope.");
+			return;
 		}
 	}
 
@@ -783,6 +779,16 @@ static void funDeclaration() {
 }
 
 static void varDeclaration() {
+	int local = resolveLocal(current, &parser.current);
+	if (local != -1) {
+		advance();
+		variable(true);
+		consume(TOKEN_SEMICOLON,
+			"Expect ';' after variable declaration.");
+		emitByte(OP_POP);
+		return;
+	}
+
 	uint8_t global = parseVariable("Expect variable name.");
 
 	if (match(TOKEN_EQUAL)) {
@@ -864,7 +870,7 @@ static void declaration() {
 	}
 	else if (check(TOKEN_IDENTIFIER) && (check_next(TOKEN_COLON) || check_next(TOKEN_LEFT_BRACE))) {
 		funDeclaration();
-	} else if (match(TOKEN_VAR)) {
+	} else if (check(TOKEN_IDENTIFIER) && (check_next(TOKEN_EQUAL) || check_next(TOKEN_SEMICOLON))) {
 		varDeclaration();
 	} else {
 		statement();
