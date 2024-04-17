@@ -231,7 +231,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 	local->depth = 0;
 	local->isCaptured = false;
 	if (type != TYPE_FUNCTION) {
-		local->name.start = "this";
+		local->name.start = "self";
 		local->name.length = 4;
 	}
 	else {
@@ -452,9 +452,9 @@ static void global_variable(bool canAssign) {
 	namedVariable(parser.previous, canAssign, true);
 }
 
-static void this_(bool canAssign) {
+static void self_(bool canAssign) {
 	if (currentClass == NULL) {
-		error("Can't use 'this' outside of a class.");
+		error("Can't use 'self' outside of an instance method.");
 		return;
 	}
 
@@ -550,7 +550,7 @@ static void super_(bool canAssign) {
 	consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
 	uint8_t name = identifierConstant(&parser.previous);
 
-	namedVariable(syntheticToken("this"), false, false);
+	namedVariable(syntheticToken("self"), false, false);
 	if (match(TOKEN_LEFT_PAREN)) {
 		uint8_t argCount = argumentList();
 		namedVariable(syntheticToken("super"), false, false);
@@ -602,7 +602,7 @@ ParseRule rules[] = {
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SUPER]         = {super_,   NULL,   PREC_NONE},
-  [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
+  [TOKEN_SELF]          = {self_,    NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
