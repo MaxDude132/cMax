@@ -78,6 +78,7 @@ typedef struct ClassCompiler {
 Parser parser;
 Compiler* current = NULL;
 ClassCompiler* currentClass = NULL;
+Token currentMethod;
 
 static Chunk* currentChunk() {
 	return &current->function->chunk;
@@ -546,9 +547,14 @@ static void super_(bool canAssign) {
 		error("Can't use 'super' in a class with no superclass.");
 	}
 
-	consume(TOKEN_DOT, "Expect '.' after 'super'.");
-	consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
-	uint8_t name = identifierConstant(&parser.previous);
+	uint8_t name;
+	if (match(TOKEN_DOT)) {
+		consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
+		name = identifierConstant(&parser.previous);
+	}
+	else {
+		name = identifierConstant(&currentMethod);
+	}
 
 	namedVariable(syntheticToken("self"), false, false);
 	if (match(TOKEN_LEFT_PAREN)) {
@@ -720,6 +726,7 @@ static void function(FunctionType type) {
 static void method() {
 	consume(TOKEN_IDENTIFIER, "Expect method name.");
 	uint8_t constant = identifierConstant(&parser.previous);
+	currentMethod = parser.previous;
 
 	FunctionType type = TYPE_METHOD;
 	if (parser.previous.length == 4 &&

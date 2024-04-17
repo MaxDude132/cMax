@@ -35,8 +35,6 @@ scone = Scone();
 scone.topping("berries", "cream");
 
 
-
-
 class myClass {
 	myFunc {
 		print "lait";
@@ -76,3 +74,26 @@ cruller.finish();
 cruller.cook();
 
 print clock() - start_time;
+
+
+class Rectangle {
+	init: width, height {
+		self.width = width;
+		self.height = height;
+	}
+
+	area {
+		return self.width * self.height;
+	}
+}
+
+
+class Square: Rectangle {
+	init: width {
+		super(width, width);  // Both do the same thing
+		super.init(width, width);
+	}
+}
+
+square = Square(10);
+print square.area();
