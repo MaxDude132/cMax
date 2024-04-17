@@ -339,6 +339,9 @@ static int resolveLocal(Compiler* compiler, Token* name) {
 	for (int i = compiler->localCount - 1; i >= 0; i--) {
 		Local* local = &compiler->locals[i];
 		if (identifiersEqual(name, &local->name)) {
+			if (local->depth == -1) {
+				error("Can't read local variable in its own initializer.");
+			}
 			return i;
 		}
 	}
@@ -384,9 +387,17 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
 	return -1;
 }
 
-static void namedVariable(Token name, bool canAssign) {
+static void namedVariable(Token name, bool canAssign, bool forceGlobal) {
 	uint8_t getOp, setOp;
-	int arg = resolveLocal(current, &name);
+	int arg;
+
+	if (forceGlobal) {
+		arg = -1;
+	}
+	else {
+		arg = resolveLocal(current, &name);
+	}
+
 	if (arg != -1) {
 		getOp = OP_GET_LOCAL;
 		setOp = OP_SET_LOCAL;
@@ -433,7 +444,12 @@ static void namedVariable(Token name, bool canAssign) {
 }
 
 static void variable(bool canAssign) {
-	namedVariable(parser.previous, canAssign);
+	namedVariable(parser.previous, canAssign, false);
+}
+
+static void global_variable(bool canAssign) {
+	advance();
+	namedVariable(parser.previous, canAssign, true);
 }
 
 static void this_(bool canAssign) {
@@ -534,15 +550,15 @@ static void super_(bool canAssign) {
 	consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
 	uint8_t name = identifierConstant(&parser.previous);
 
-	namedVariable(syntheticToken("this"), false);  
+	namedVariable(syntheticToken("this"), false, false);
 	if (match(TOKEN_LEFT_PAREN)) {
 		uint8_t argCount = argumentList();
-		namedVariable(syntheticToken("super"), false);
+		namedVariable(syntheticToken("super"), false, false);
 		emitBytes(OP_SUPER_INVOKE, name);
 		emitByte(argCount);
 	}
 	else {
-		namedVariable(syntheticToken("super"), false);
+		namedVariable(syntheticToken("super"), false, false);
 		emitBytes(OP_GET_SUPER, name);
 	}
 }
@@ -571,6 +587,7 @@ ParseRule rules[] = {
   [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
   [TOKEN_LESS]          = {NULL,     binary, PREC_COMPARISON},
   [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
+  [TOKEN_GLOBAL]		= {global_variable, NULL,   PREC_NONE},
   [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
   [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
   [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
@@ -630,17 +647,6 @@ static void declareVariable() {
 	if (current->scopeDepth == 0) return;
 
 	Token* name = &parser.previous;
-	for (int i = current->localCount - 1; i >= 0; i--) {
-		Local* local = &current->locals[i];
-		if (local->depth != -1 && local->depth < current->scopeDepth) {
-			break;
-		}
-
-		if (identifiersEqual(name, &local->name)) {
-			return;
-		}
-	}
-
 	addLocal(*name);
 }
 
@@ -751,12 +757,12 @@ static void classDeclaration() {
 		addLocal(syntheticToken("super"));
 		defineVariable(0);
 
-		namedVariable(className, false);
+		namedVariable(className, false, false);
 		emitByte(OP_INHERIT);
 		classCompiler.hasSuperclass = true;
 	}
 
-	namedVariable(className, false);
+	namedVariable(className, false, false);
 	consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 	while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
 		method();

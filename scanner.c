@@ -122,6 +122,7 @@ static TokenType identifierType() {
 			}
 		}
 		break;
+	case 'g': return checkKeyword(1, 5, "lobal", TOKEN_GLOBAL);
 	case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
 	case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
 	case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
