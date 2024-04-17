@@ -47,7 +47,7 @@ class CoffeeMaker {
   	}
 
   	brew {
-    	print "Enjoy your cup of " + self.coffee;
+    	print 'Enjoy your cup of ' + self.coffee;
 
     	// No reusing the grounds!
     	self.coffee = nil;
@@ -73,8 +73,6 @@ cruller = Cruller();
 cruller.finish();
 cruller.cook();
 
-print clock() - start_time;
-
 
 class Rectangle {
 	init: width, height {
@@ -97,3 +95,8 @@ class Square: Rectangle {
 
 square = Square(10);
 print square.area();
+
+
+
+
+print clock() - start_time;
