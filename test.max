@@ -1,3 +1,12 @@
+fib: n {
+	if n < 2 {
+		return n;
+	}
+
+	return fib(n - 2) + fib(n - 1);
+}
+
+
 start_time = clock();
 
 test: n {
@@ -36,21 +45,26 @@ scone.topping("berries", "cream");
 
 
 class myClass {
-	myFunc {
+	my_func {
 		print "lait";
 	}
 }
 
 class CoffeeMaker {
   	init: coffee {
-  		self.coffee = coffee;
+  		self.coffee_unique = coffee;
+  	}
+
+  	get_coffee_unique {
+  		print "GOT IN GETTER!!!";
+  		return self.coffee_unique;
   	}
 
   	brew {
-    	print 'Enjoy your cup of ' + self.coffee;
+    	print 'Enjoy your cup of ' + self.coffee_unique;
 
-    	// No reusing the grounds!
-    	self.coffee = nil;
+    	-- No reusing the grounds!
+    	self.coffee_unique = nil;
   	}
 }
 
@@ -88,7 +102,7 @@ class Rectangle {
 
 class Square: Rectangle {
 	init: width {
-		super(width, width);  // Both do the same thing
+		super(width, width);  -- Both do the same thing
 		super.init(width, width);
 	}
 }
@@ -96,7 +110,10 @@ class Square: Rectangle {
 square = Square(10);
 print square.area();
 
-
+-*
+	This is a multi-line comment.
+	print clock() - start_time;
+*-
 
 
 print clock() - start_time;

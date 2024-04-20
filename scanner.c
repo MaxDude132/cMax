@@ -84,10 +84,20 @@ static void skipWhitespace() {
 			scanner.line++;
 			advance();
 			break;
-		case '/':
-			if (peekNext() == '/') {
+		case '-':
+			if (peekNext() == '-') {
 				// A comment goes until the end of the line.
 				while (peek() != '\n' && !isAtEnd()) advance();
+			}
+			else if (peekNext() == '*') {
+				while (!(peek() == '*' && peekNext() == '-') && !isAtEnd()) {
+					if (peek() == '\n') scanner.line++;
+					advance();
+				}
+				
+				// Skip end comment tokens
+				advance();
+				advance();
 			}
 			else {
 				return;
